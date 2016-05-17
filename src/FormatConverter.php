@@ -1,5 +1,5 @@
 <?php
-namespace shirase55\yii2\helpers;
+namespace shirase\yii2\helpers;
 
 class FormatConverter extends \yii\helpers\FormatConverter
 {

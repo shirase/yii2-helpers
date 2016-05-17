@@ -1,0 +1,12 @@
+{
+    "name": "shirase55/yii2-helpers",
+    "type": "yii2-extension",
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "shirase\\yii2\helpers\\": ""
+        }
+    }
+}

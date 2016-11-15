@@ -20,7 +20,7 @@ class Models extends Object
         if (isset($data[$scope])) {
             $rows = ArrayHelper::getValue($data, $scope, []);
 
-            \common\components\helpers\ArrayHelper::normalize($rows);
+            \shirase\helpers\ArrayHelper::normalize($rows);
             $tx = \Yii::$app->db->beginTransaction();
             $ok = true;
             foreach ($rows as $i=>$row) {

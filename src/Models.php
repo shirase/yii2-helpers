@@ -4,7 +4,6 @@ namespace shirase\yii2\helpers;
 
 use yii\base\Object;
 use yii\db\ActiveRecord;
-use yii\helpers\ArrayHelper;
 
 class Models extends Object
 {
@@ -20,7 +19,7 @@ class Models extends Object
         if (isset($data[$scope])) {
             $rows = ArrayHelper::getValue($data, $scope, []);
 
-            \shirase\helpers\ArrayHelper::normalize($rows);
+            ArrayHelper::normalize($rows);
             $tx = \Yii::$app->db->beginTransaction();
             $ok = true;
             foreach ($rows as $i=>$row) {

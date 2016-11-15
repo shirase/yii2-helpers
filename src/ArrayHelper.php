@@ -1,7 +1,7 @@
 <?php
-namespace shirase\helpers;
+namespace shirase\yii2\helpers;
 
-class ArrayHelper
+class ArrayHelper extends \yii\helpers\ArrayHelper
 {
     public static function normalize(&$data) {
         if(is_array($data) && sizeof($data)) {

@@ -6,7 +6,8 @@
     },
     "autoload": {
         "psr-4": {
-            "shirase\\yii2\\helpers\\": "src/"
+            "shirase\\yii2\\helpers\\": "src/",
+            "shirase\\helpers\\": "src/"
         }
     }
 }

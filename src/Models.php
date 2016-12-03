@@ -72,7 +72,7 @@ class Models extends Model implements \IteratorAggregate
 
             if (is_array($rows)) {
                 foreach ($rows as $i=>$row) {
-                    if ($pk = $row[$baseModel->primaryKey()[0]]) {
+                    if ($baseModel instanceof ActiveRecord && $pk = $row[$baseModel->primaryKey()[0]]) {
                         $model = $baseModel::findOne($pk);
                     } else {
                         $model = clone $baseModel;

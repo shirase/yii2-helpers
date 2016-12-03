@@ -2,6 +2,7 @@
 
 namespace shirase\yii2\helpers;
 
+use yii\base\Model;
 use yii\db\ActiveRecord;
 
 class Models implements \IteratorAggregate
@@ -23,7 +24,7 @@ class Models implements \IteratorAggregate
     }
 
     /**
-     * @param ActiveRecord $baseModel
+     * @param Model $baseModel
      * @param array $data
      * @param null $formName
      * @return Models|false

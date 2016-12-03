@@ -5,49 +5,85 @@ namespace shirase\yii2\helpers;
 use yii\base\Model;
 use yii\db\ActiveRecord;
 
-class Models implements \IteratorAggregate
+/**
+ * Class Models
+ * @package shirase\yii2\helpers
+ * @property Model[]|ActiveRecord[] $models
+ */
+class Models extends Model implements \IteratorAggregate
 {
     public function getIterator() {
         return new \ArrayIterator($this->models);
     }
 
     /**
-     * @var ActiveRecord[]
+     * @var string
      */
-    private $models;
+    public $db = 'db';
 
     /**
-     * @param $models ActiveRecord[]
+     * @var Model|ActiveRecord
      */
-    public function __construct($models) {
+    private $model;
+
+    /**
+     * @var Model[]|ActiveRecord[]
+     */
+    private $models = [];
+
+    /**
+     * @param Model[]|ActiveRecord[] $models
+     */
+    public function setModels($models) {
         $this->models = $models;
     }
 
     /**
-     * @param Model $baseModel
-     * @param array $data
-     * @param null $formName
-     * @return Models|false
-     * @throws \yii\db\Exception
+     * @return \yii\base\Model[]|\yii\db\ActiveRecord[]
      */
-    public static function load($baseModel, $data, $formName = null) {
+    public function getModels() {
+        return $this->models;
+    }
+
+    /**
+     * @param Model|ActiveRecord $model Base model
+     * @param $config
+     */
+    public function __construct($model, $config = []) {
+        parent::__construct($config);
+        $this->model = $model;
+    }
+
+    /**
+     * @param array $data
+     * @param string $formName
+     * @return bool
+     */
+    public function load($data, $formName = null)
+    {
+        /**
+         * @var Model|ActiveRecord $baseModel
+         */
+        $baseModel = $this->model;
         $scope = $formName === null ? $baseModel->formName() : $formName;
         if (isset($data[$scope])) {
             $rows = ArrayHelper::getValue($data, $scope, []);
             ArrayHelper::normalize($rows);
 
-            foreach ($rows as $i=>$row) {
-                if ($row['id']) {
-                    $model = $baseModel::findOne($row['id']);
-                } else {
-                    $model = clone $baseModel;
-                }
+            if (is_array($rows)) {
+                foreach ($rows as $i=>$row) {
+                    if ($pk = $row[$baseModel->primaryKey()[0]]) {
+                        $model = $baseModel::findOne($pk);
+                    } else {
+                        $model = clone $baseModel;
+                    }
 
-                $model->attributes = $row;
-                $rows[$i] = $model;
+                    $model->attributes = $row;
+                    $this->models[] = $model;
+                }
             }
 
-            return new Models($rows);
+            return true;
         }
 
         return false;
@@ -97,5 +133,13 @@ class Models implements \IteratorAggregate
             $tx->rollBack();
             return false;
         }
+    }
+
+    /**
+     * @return \yii\db\Connection
+     */
+    public function getDb()
+    {
+        return Yii::$app->get($this->db);
     }
 }

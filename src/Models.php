@@ -135,6 +135,26 @@ class Models extends Model implements \IteratorAggregate
         }
     }
 
+    public function getErrors($attribute = null) {
+        $errors = [];
+        foreach ($this->models as $model) {
+            if ($err = $model->getErrors($attribute)) {
+                $errors[] = $err;
+            }
+        }
+        return $errors ?: null;
+    }
+
+    public function getFirstError($attribute) {
+        $errors = [];
+        foreach ($this->models as $model) {
+            if ($err = $model->getErrors($attribute)) {
+                $errors[] = reset($err);
+            }
+        }
+        return $errors ?: null;
+    }
+
     /**
      * @return string
      */

@@ -136,10 +136,17 @@ class Models extends Model implements \IteratorAggregate
     }
 
     /**
+     * @return string
+     */
+    public function formName() {
+        return $this->model->formName();
+    }
+
+    /**
      * @return \yii\db\Connection
      */
     public function getDb()
     {
-        return Yii::$app->get($this->db);
+        return \Yii::$app->get($this->db);
     }
 }

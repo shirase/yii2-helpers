@@ -65,7 +65,7 @@ class Models extends Model implements \IteratorAggregate
          * @var Model|ActiveRecord $baseModel
          */
         $baseModel = $this->model;
-        $scope = $formName === null ? $baseModel->formName() : $formName;
+        $scope = $formName === null ? $this->formName() : $formName;
         if (isset($data[$scope])) {
             $rows = ArrayHelper::getValue($data, $scope, []);
             ArrayHelper::normalize($rows);

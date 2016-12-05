@@ -155,6 +155,15 @@ class Models extends Model implements \IteratorAggregate
         return $errors ?: null;
     }
 
+    public function hasErrors($attribute = null) {
+        foreach ($this->models as $model) {
+            if ($model->hasErrors($attribute)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * @return string
      */

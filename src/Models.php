@@ -3,6 +3,7 @@
 namespace shirase\yii2\helpers;
 
 use yii\base\Model;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 
 /**
@@ -20,6 +21,11 @@ class Models extends Model implements \IteratorAggregate
      * @var string
      */
     public $db = 'db';
+
+    /**
+     * @var ActiveQuery
+     */
+    public $query;
 
     /**
      * @var Model|ActiveRecord
@@ -73,7 +79,11 @@ class Models extends Model implements \IteratorAggregate
             if (is_array($rows)) {
                 foreach ($rows as $i=>$row) {
                     if ($baseModel instanceof ActiveRecord && $pk = $row[$baseModel->primaryKey()[0]]) {
-                        $model = $baseModel::findOne($pk);
+                        if ($this->query) {
+                            $model = $this->query->andWhere([$baseModel->primaryKey()[0] => $pk])->one();
+                        } else {
+                            $model = $baseModel::findOne($pk);
+                        }
                     } else {
                         $model = clone $baseModel;
                     }

@@ -86,12 +86,26 @@ class Models extends Model implements \IteratorAggregate
                             $model = $baseModel::findOne($pk);
                         }
                         if (!$model) continue;
+
+                        $model->attributes = $row;
+
+                        $pkName = $baseModel->primaryKey()[0];
+                        $found = false;
+                        foreach ($this->models as $i=>$m) {
+                            if ($m->{$pkName} && $m->{$pkName}==$model->{$pkName}) {
+                                $found = true;
+                                $this->models[$i] = $model;
+                                break;
+                            }
+                        }
+                        if (!$found) {
+                            $this->models[] = $model;
+                        }
                     } else {
                         $model = clone $baseModel;
+                        $model->attributes = $row;
+                        $this->models[] = $model;
                     }
-
-                    $model->attributes = $row;
-                    $this->models[] = $model;
                 }
             }
 

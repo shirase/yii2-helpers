@@ -30,6 +30,8 @@ class MultiModel extends Model
      */
     protected $models = [];
 
+    private $loaded = null;
+
     /**
      * @param Model[] $models
      * @param $config
@@ -78,17 +80,29 @@ class MultiModel extends Model
 
     /**
      * @param array $data
-     * @param string $formName
+     * @param boolean $skipNull
      * @return bool
      */
-    public function load($data, $formName = '')
+    public function load($data, $skipNull = false)
     {
+        if ($skipNull) {
+            $this->loaded = [];
+        }
+
         foreach ($this->models as $k => &$model) {
-            $success = $model->load($data);
-            if (!$success) {
-                return false;
+            if ($model->load($data)) {
+                $this->loaded[] = $model;
             }
         }
+
+        if (!$skipNull) {
+            if (sizeof($this->loaded) != sizeof($this->models))
+                return false;
+        } else {
+            if (!$this->loaded)
+                return false;
+        }
+
         return true;
     }
 
@@ -101,7 +115,7 @@ class MultiModel extends Model
     {
         $this->trigger(Model::EVENT_BEFORE_VALIDATE);
         $success = true;
-        foreach ($this->models as $key => $model) {
+        foreach ($this->loaded!==null ? $this->loaded : $this->models as $key => $model) {
             /* @var $model Model */
             if (!$model->validate()) {
                 $success = false;
@@ -110,6 +124,15 @@ class MultiModel extends Model
         }
         $this->trigger(Model::EVENT_AFTER_VALIDATE);
         return $success;
+    }
+
+    public function getFirstErrors()
+    {
+        foreach ($this->loaded!==null ? $this->loaded : $this->models as $key => $model) {
+            if ($errors = $model->getFirstErrors())
+                return $errors;
+        }
+        return [];
     }
 
     /**
@@ -124,7 +147,7 @@ class MultiModel extends Model
         }
         $success = true;
         $transaction = $this->getDb()->beginTransaction();
-        foreach ($this->models as $model) {
+        foreach ($this->loaded!==null ? $this->loaded : $this->models as $model) {
             $success = $model->save(false);
             if (!$success) {
                 $transaction->rollBack();

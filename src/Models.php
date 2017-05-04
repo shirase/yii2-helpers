@@ -81,7 +81,7 @@ class Models extends Model implements \IteratorAggregate
                     if ($baseModel instanceof ActiveRecord && $pk = $row[$baseModel->primaryKey()[0]]) {
                         if ($this->query) {
                             $query = clone($this->query);
-                            $model = $query->andWhere([$baseModel->primaryKey()[0] => $pk])->one();
+                            $model = $query->andWhere([$baseModel::tableName() .'.[['.$baseModel->primaryKey()[0].']]' => $pk])->one();
                         } else {
                             $model = $baseModel::findOne($pk);
                         }

@@ -5,6 +5,7 @@ namespace shirase\yii2\helpers;
 use yii\base\Model;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
+use yii\db\Exception;
 
 /**
  * Class Models
@@ -23,11 +24,6 @@ class Models extends Model implements \IteratorAggregate
     public $db = 'db';
 
     /**
-     * @var ActiveQuery
-     */
-    public $query;
-
-    /**
      * @var Model|ActiveRecord
      */
     private $model;
@@ -36,6 +32,8 @@ class Models extends Model implements \IteratorAggregate
      * @var Model[]|ActiveRecord[]
      */
     private $models = [];
+
+    private $notLoadedModels = [];
 
     /**
      * @param Model[]|ActiveRecord[] $models
@@ -67,6 +65,11 @@ class Models extends Model implements \IteratorAggregate
      */
     public function load($data, $formName = null)
     {
+        $this->notLoadedModels = [];
+        foreach ($this->models as $model) {
+            $this->notLoadedModels[$model->primaryKey] = $model;
+        }
+
         /**
          * @var Model|ActiveRecord $baseModel
          */
@@ -77,29 +80,15 @@ class Models extends Model implements \IteratorAggregate
             ArrayHelper::normalize($rows);
 
             if (is_array($rows)) {
-                foreach ($rows as $i=>$row) {
-                    if ($baseModel instanceof ActiveRecord && $pk = $row[$baseModel->primaryKey()[0]]) {
-                        if ($this->query) {
-                            $query = clone($this->query);
-                            $model = $query->andWhere([$baseModel::tableName() .'.[['.$baseModel->primaryKey()[0].']]' => $pk])->one();
-                        } else {
-                            $model = $baseModel::findOne($pk);
-                        }
-                        if (!$model) continue;
-
-                        $model->attributes = $row;
-
+                foreach ($rows as $row) {
+                    if ($baseModel instanceof ActiveRecord && ($pk = $row[$baseModel->primaryKey()[0]])) {
                         $pkName = $baseModel->primaryKey()[0];
-                        $found = false;
-                        foreach ($this->models as $i=>$m) {
-                            if ($m->{$pkName} && $m->{$pkName}==$model->{$pkName}) {
-                                $found = true;
-                                $this->models[$i] = $model;
+                        foreach ($this->models as $model) {
+                            if ($model->{$pkName} && $model->{$pkName} == $pk) {
+                                $model->attributes = $row;
+                                unset($this->notLoadedModels[$model->primaryKey]);
                                 break;
                             }
-                        }
-                        if (!$found) {
-                            $this->models[] = $model;
                         }
                     } else {
                         $model = clone $baseModel;
@@ -137,10 +126,13 @@ class Models extends Model implements \IteratorAggregate
     /**
      * @param bool|true $runValidation
      * @param null $attributeNames
+     * @param bool $deleteNotLoaded
      * @return bool|null
-     * @throws \yii\db\Exception
+     * @throws Exception
+     * @throws \Exception
+     * @throws \Throwable
      */
-    public function save($runValidation = true, $attributeNames = null) {
+    public function save($runValidation = true, $attributeNames = null, $deleteNotLoaded = true) {
         if ($this->models === null) {
             return null;
         }
@@ -153,6 +145,13 @@ class Models extends Model implements \IteratorAggregate
             }
         }
         if ($valid) {
+            if ($deleteNotLoaded) {
+                /** @var ActiveRecord $model */
+                foreach ($this->notLoadedModels as $model) {
+                    if (!$model->delete())
+                        throw new Exception('Delete error', $model->errors);
+                }
+            }
             $tx->commit();
             return true;
         } else {

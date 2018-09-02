@@ -77,7 +77,6 @@ class Models extends Model implements \IteratorAggregate
         $scope = $formName === null ? $this->formName() : $formName;
         if (isset($data[$scope])) {
             $rows = ArrayHelper::getValue($data, $scope, []);
-            ArrayHelper::normalize($rows);
 
             if (is_array($rows)) {
                 foreach ($rows as $row) {

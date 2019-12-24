@@ -30,7 +30,7 @@ class MultiModel extends Model
      */
     protected $models = [];
 
-    private $loaded = null;
+    private $loaded = [];
 
     /**
      * @param Model[] $models
